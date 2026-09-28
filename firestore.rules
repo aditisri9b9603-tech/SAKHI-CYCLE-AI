@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny all documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Test connection doc used to verify database connectivity on boot
+    match /test/{testDoc} {
+      allow read: if true;
+    }
+
+    // Validation helper for User Profile
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'email', 'displayName']) &&
+        data.uid is string && data.uid.size() <= 128 && data.uid == request.auth.uid &&
+        data.email is string && data.email.size() <= 256 &&
+        data.displayName is string && data.displayName.size() <= 100;
+    }
+
+    // User document
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUserProfile(request.resource.data);
+      allow update: if isOwner(userId) && isValidId(userId) && isValidUserProfile(request.resource.data);
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      // Cycle entries subcollection
+      function isValidCycleEntry(data, uid) {
+        return data.keys().hasAll(['id', 'userId', 'cycleDay', 'phase']) &&
+          data.id is string && data.id.size() <= 128 &&
+          data.userId == uid &&
+          data.cycleDay is number &&
+          data.phase is string && data.phase.size() <= 50;
+      }
+
+      match /cycleEntries/{entryId} {
+        allow get, list: if isOwner(userId) && isValidId(userId);
+        allow create: if isOwner(userId) && isValidId(userId) && isValidId(entryId) && isValidCycleEntry(request.resource.data, userId);
+        allow update: if isOwner(userId) && isValidId(userId) && isValidId(entryId) && isValidCycleEntry(request.resource.data, userId);
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(entryId);
+      }
+
+      // Voice notes subcollection (gemini-3.5-transcribe output)
+      function isValidVoiceNote(data, uid) {
+        return data.keys().hasAll(['id', 'userId', 'title', 'transcript']) &&
+          data.id is string && data.id.size() <= 128 &&
+          data.userId == uid &&
+          data.title is string && data.title.size() <= 150 &&
+          data.transcript is string && data.transcript.size() <= 10000;
+      }
+
+      match /voiceNotes/{noteId} {
+        allow get, list: if isOwner(userId) && isValidId(userId);
+        allow create: if isOwner(userId) && isValidId(userId) && isValidId(noteId) && isValidVoiceNote(request.resource.data, userId);
+        allow update: if isOwner(userId) && isValidId(userId) && isValidId(noteId) && isValidVoiceNote(request.resource.data, userId);
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(noteId);
+      }
+
+      // Consultations subcollection
+      function isValidConsultation(data, uid) {
+        return data.keys().hasAll(['id', 'userId', 'doctorId', 'doctorName', 'status']) &&
+          data.id is string && data.id.size() <= 128 &&
+          data.userId == uid &&
+          data.doctorId is string && data.doctorId.size() <= 100 &&
+          data.doctorName is string && data.doctorName.size() <= 100 &&
+          data.status is string && (data.status == 'confirmed' || data.status == 'completed' || data.status == 'cancelled');
+      }
+
+      match /consultations/{consultationId} {
+        allow get, list: if isOwner(userId) && isValidId(userId);
+        allow create: if isOwner(userId) && isValidId(userId) && isValidId(consultationId) && isValidConsultation(request.resource.data, userId);
+        allow update: if isOwner(userId) && isValidId(userId) && isValidId(consultationId) && isValidConsultation(request.resource.data, userId);
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(consultationId);
+      }
+    }
+
+    // Forum posts collection
+    function isValidForumPost(data) {
+      return data.keys().hasAll(['id', 'authorId', 'authorAlias', 'phaseTag', 'content']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.authorId is string && data.authorId.size() <= 128 &&
+        data.authorAlias is string && data.authorAlias.size() <= 100 &&
+        data.phaseTag is string && data.phaseTag.size() <= 50 &&
+        data.content is string && data.content.size() <= 2000;
+    }
+
+    match /forumPosts/{postId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && isValidId(postId) && isValidForumPost(request.resource.data) && request.resource.data.authorId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(postId) && isValidForumPost(request.resource.data) && (
+        request.resource.data.authorId == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount'])
+      );
+      allow delete: if isSignedIn() && isValidId(postId) && resource.data.authorId == request.auth.uid;
+    }
+  }
+}

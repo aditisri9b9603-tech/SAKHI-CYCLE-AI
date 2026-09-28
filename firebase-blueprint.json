@@ -1,0 +1,105 @@
+{
+  "entities": {
+    "userProfile": {
+      "title": "UserProfile",
+      "description": "User profile with endocrine baseline and preferences",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 100 },
+        "currentPhase": { "type": "string", "enum": ["Follicular", "Ovulatory", "Luteal", "Menstrual"] },
+        "cycleDay": { "type": "number" },
+        "objective": { "type": "string", "enum": ["balance", "fertility"] },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["uid", "email", "displayName"]
+    },
+    "cycleEntry": {
+      "title": "CycleEntry",
+      "description": "Daily endocrine biomarker and symptom log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "cycleDay": { "type": "number" },
+        "phase": { "type": "string", "maxLength": 50 },
+        "symptoms": { "type": "string", "maxLength": 500 },
+        "notes": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "userId", "cycleDay", "phase"]
+    },
+    "voiceNote": {
+      "title": "VoiceNote",
+      "description": "Transcribed voice journal entry using gemini-3.5-transcribe",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 150 },
+        "transcript": { "type": "string", "maxLength": 10000 },
+        "durationSec": { "type": "number" },
+        "category": { "type": "string", "maxLength": 50 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "userId", "title", "transcript"]
+    },
+    "consultation": {
+      "title": "Consultation",
+      "description": "Scheduled clinical consultation with certified specialist",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "doctorId": { "type": "string", "maxLength": 100 },
+        "doctorName": { "type": "string", "maxLength": 100 },
+        "specialty": { "type": "string", "maxLength": 100 },
+        "date": { "type": "string", "maxLength": 50 },
+        "time": { "type": "string", "maxLength": 50 },
+        "symptoms": { "type": "string", "maxLength": 1000 },
+        "status": { "type": "string", "enum": ["confirmed", "completed", "cancelled"] },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "userId", "doctorId", "doctorName", "status"]
+    },
+    "forumPost": {
+      "title": "ForumPost",
+      "description": "Sisterhood community dialogue thread",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "authorId": { "type": "string", "maxLength": 128 },
+        "authorAlias": { "type": "string", "maxLength": 100 },
+        "phaseTag": { "type": "string", "maxLength": 50 },
+        "content": { "type": "string", "maxLength": 2000 },
+        "likesCount": { "type": "number" },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "authorId", "authorAlias", "phaseTag", "content"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "userProfile",
+      "description": "Individual member private biological profile"
+    },
+    "/users/{userId}/cycleEntries/{entryId}": {
+      "schema": "cycleEntry",
+      "description": "Daily symptoms and cycle telemetry entries"
+    },
+    "/users/{userId}/voiceNotes/{noteId}": {
+      "schema": "voiceNote",
+      "description": "Transcribed voice notes and clinical audio questions"
+    },
+    "/users/{userId}/consultations/{consultationId}": {
+      "schema": "consultation",
+      "description": "Doctor appointments booked by the member"
+    },
+    "/forumPosts/{postId}": {
+      "schema": "forumPost",
+      "description": "Public community dialogues and kinship threads"
+    }
+  }
+}
