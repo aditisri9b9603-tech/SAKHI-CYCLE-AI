@@ -1,4 +1,5 @@
 export type ScreenId = 
+  | 'home'
   | 'gateway'
   | 'doctors'
   | 'good-vibes'
@@ -86,7 +87,13 @@ export interface CycleEntry {
   userId: string;
   cycleDay: number;
   phase: string;
+  mood?: string;
+  tags?: string[];
   symptoms?: string;
+  energyLevel?: number;
+  crampLevel?: number;
+  bbt?: number;
+  cervicalFluid?: string;
   notes?: string;
   createdAt: string;
 }

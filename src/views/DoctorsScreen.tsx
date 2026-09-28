@@ -50,7 +50,7 @@ export const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ onOpenTranscriber 
           symptoms: `Consultation format: ${consultFormat} • Day 9 Follicular telemetry pre-attached.`,
         });
       } catch (err) {
-        console.error('Failed to persist consultation to Firestore:', err);
+        console.warn('Consultation persist notice:', err);
       }
     }
     showToast(
@@ -73,7 +73,7 @@ export const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ onOpenTranscriber 
           symptoms: queryText,
         });
       } catch (err) {
-        console.error('Failed to persist query to Firestore:', err);
+        console.warn('Query persist notice:', err);
       }
     }
     showToast(

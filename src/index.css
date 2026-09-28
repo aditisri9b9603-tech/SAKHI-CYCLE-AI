@@ -1,31 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #610011;
-  --color-primary-container: #8b001d;
+  --color-primary: #db2777;
+  --color-primary-container: #fce7f3;
   --color-on-primary: #ffffff;
-  --color-on-primary-container: #ff9091;
-  --color-primary-fixed: #ffdad9;
-  --color-primary-fixed-dim: #ffb3b2;
-  --color-secondary: #8d4a56;
-  --color-secondary-container: #feaab7;
-  --color-on-secondary-container: #7a3b47;
-  --color-secondary-fixed: #ffd9de;
-  --color-secondary-fixed-dim: #ffb2bd;
-  --color-tertiary: #735c00;
-  --color-tertiary-container: #cca730;
-  --color-surface: #fff8f7;
-  --color-surface-dim: #eed4d8;
-  --color-surface-bright: #fff8f7;
+  --color-on-primary-container: #831843;
+  --color-primary-fixed: #ffd5df;
+  --color-primary-fixed-dim: #fbcfe8;
+  --color-secondary: #be185d;
+  --color-secondary-container: #fff0f3;
+  --color-on-secondary-container: #9d174d;
+  --color-secondary-fixed: #ffe4eb;
+  --color-secondary-fixed-dim: #ffd5df;
+  --color-tertiary: #9333ea;
+  --color-tertiary-container: #f3e8ff;
+  --color-surface: #fffafb;
+  --color-surface-dim: #ffd5df;
+  --color-surface-bright: #ffffff;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #fff0f2;
-  --color-surface-container: #ffe8ec;
-  --color-surface-container-high: #fce2e6;
-  --color-surface-container-highest: #f7dce0;
+  --color-surface-container-low: #fff5f7;
+  --color-surface-container: #ffeef2;
+  --color-surface-container-high: #ffe4eb;
+  --color-surface-container-highest: #ffd5df;
   --color-on-surface: #26181b;
   --color-on-surface-variant: #594140;
-  --color-outline: #8d706f;
-  --color-outline-variant: #e1bebd;
+  --color-outline: #db2777;
+  --color-outline-variant: #fbcfe8;
   --font-serif: "Playfair Display", "EB Garamond", Georgia, serif;
   --font-sans: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
 }
@@ -108,6 +108,51 @@
     font-weight: 700;
     letter-spacing: 0.08em;
   }
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+@keyframes pulseSoft {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+}
+
+.animate-gradient-flow {
+  background-size: 200% 200%;
+  animation: gradientFlow 8s ease infinite;
+}
+
+.animate-float-slow {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulseSoft 4s ease-in-out infinite;
 }
 
 .material-symbols-outlined {

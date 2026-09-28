@@ -93,7 +93,7 @@ export const AudioTranscriberModal: React.FC<AudioTranscriberModalProps> = ({
         setRecordingDuration((prev) => prev + 1);
       }, 1000);
     } catch (err: any) {
-      console.error('Microphone access denied or error:', err);
+      console.warn('Microphone access notice:', err?.message || err);
       setErrorMsg(
         err.name === 'NotAllowedError'
           ? 'Microphone permission was denied. Please allow microphone access in your browser.'
@@ -160,7 +160,7 @@ export const AudioTranscriberModal: React.FC<AudioTranscriberModalProps> = ({
           const data = await res.json();
           setTranscript(data.transcript || 'No speech detected.');
         } catch (err: any) {
-          console.error('Transcription error:', err);
+          console.warn('Transcription service notice:', err?.message || err);
           setErrorMsg(err.message || 'Failed to transcribe audio with Gemini 3.5 Transcribe.');
         } finally {
           setIsTranscribing(false);

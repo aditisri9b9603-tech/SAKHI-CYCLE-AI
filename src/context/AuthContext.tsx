@@ -176,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     } catch (err) {
-      console.error('Google login failed:', err);
+      console.warn('Google login notice:', err);
       throw err;
     }
   };
@@ -234,38 +234,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const saveCycleEntry = async (entry: Omit<CycleEntry, 'id' | 'userId' | 'createdAt'>) => {
-    if (!user) throw new Error('User must be authenticated to log cycle data');
     const id = `cycle_${Date.now()}`;
-    const entryPath = `users/${user.uid}/cycleEntries/${id}`;
-    const docRef = doc(db, 'users', user.uid, 'cycleEntries', id);
+    const uid = user ? user.uid : 'guest_member';
     const payload: CycleEntry = {
       ...entry,
       id,
-      userId: user.uid,
+      userId: uid,
       createdAt: new Date().toISOString(),
     };
-    try {
-      await setDoc(docRef, payload);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, entryPath);
+
+    // Immediate local state update for real-time reactive UI
+    setCycleEntries((prev) => [payload, ...prev.filter((p) => p.cycleDay !== payload.cycleDay)]);
+
+    // Update userProfile current day if matching
+    if (userProfile && entry.cycleDay) {
+      setUserProfile((prev) => prev ? { ...prev, cycleDay: entry.cycleDay, currentPhase: entry.phase as any } : prev);
+    }
+
+    if (user) {
+      const entryPath = `users/${user.uid}/cycleEntries/${id}`;
+      const docRef = doc(db, 'users', user.uid, 'cycleEntries', id);
+      try {
+        await setDoc(docRef, payload);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, entryPath);
+      }
     }
   };
 
   const saveVoiceNote = async (note: Omit<VoiceNote, 'id' | 'userId' | 'createdAt'>) => {
-    if (!user) throw new Error('User must be authenticated to save voice note');
     const id = `voice_${Date.now()}`;
-    const notePath = `users/${user.uid}/voiceNotes/${id}`;
-    const docRef = doc(db, 'users', user.uid, 'voiceNotes', id);
+    const uid = user ? user.uid : 'guest_member';
     const payload: VoiceNote = {
       ...note,
       id,
-      userId: user.uid,
+      userId: uid,
       createdAt: new Date().toISOString(),
     };
-    try {
-      await setDoc(docRef, payload);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, notePath);
+
+    setVoiceNotes((prev) => [payload, ...prev]);
+
+    if (user) {
+      const notePath = `users/${user.uid}/voiceNotes/${id}`;
+      const docRef = doc(db, 'users', user.uid, 'voiceNotes', id);
+      try {
+        await setDoc(docRef, payload);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, notePath);
+      }
     }
   };
 

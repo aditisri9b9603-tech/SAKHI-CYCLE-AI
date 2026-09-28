@@ -7,6 +7,7 @@ import { CartDrawer } from './components/CartDrawer';
 import { AudioTranscriberModal } from './components/AudioTranscriberModal';
 
 // Screens
+import { HomeScreen } from './views/HomeScreen';
 import { GatewayScreen } from './views/GatewayScreen';
 import { DoctorsScreen } from './views/DoctorsScreen';
 import { GoodVibesScreen } from './views/GoodVibesScreen';
@@ -18,9 +19,10 @@ import { AiCompanionScreen } from './views/AiCompanionScreen';
 import { SettingsScreen } from './views/SettingsScreen';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<ScreenId>('doctors');
+  const [currentScreen, setCurrentScreen] = useState<ScreenId>('home');
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Audio Transcriber Modal State (gemini-3.5-transcribe)
   const [isTranscriberOpen, setIsTranscriberOpen] = useState(false);
@@ -78,7 +80,7 @@ export default function App() {
   if (currentScreen === 'gateway') {
     return (
       <GatewayScreen
-        onEnterSanctuary={() => setCurrentScreen('doctors')}
+        onEnterSanctuary={() => setCurrentScreen('home')}
         onNavigateDirect={(screen) => setCurrentScreen(screen)}
       />
     );
@@ -86,17 +88,19 @@ export default function App() {
 
   // Dashboard layout for clinical care, acoustic sanctuary, period care, community, etc.
   return (
-    <div className="bg-[#fff8f7] font-sans text-[#26181b] antialiased min-h-screen relative flex flex-col">
+    <div className="bg-[#fff8f7] font-sans text-[#26181b] antialiased min-h-screen relative flex flex-col selection:bg-[#610011] selection:text-white">
       {/* Sidebar Navigation */}
       <NavigationSidebar
         currentScreen={currentScreen}
         onNavigate={(screen) => setCurrentScreen(screen)}
         cartCount={totalCartCount}
         onOpenCart={() => setIsCartOpen(true)}
+        isMobileOpen={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
-      {/* Main Content Area */}
-      <div className="pl-72 flex flex-col min-h-screen">
+      {/* Main Content Area: Responsive pl-0 on mobile, pl-72 on large desktop */}
+      <div className="pl-0 lg:pl-72 flex flex-col min-h-screen transition-all">
         {/* Top Header */}
         <TopHeader
           currentScreen={currentScreen}
@@ -104,10 +108,20 @@ export default function App() {
           cartCount={totalCartCount}
           onOpenCart={() => setIsCartOpen(true)}
           onOpenAudioTranscriber={handleOpenTranscriber}
+          onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />
 
         {/* Dynamic View Component */}
         <main className="relative w-full pt-20 pb-16 bg-[#fff8f7] flex-1">
+          {currentScreen === 'home' && (
+            <HomeScreen
+              onNavigate={(screen) => setCurrentScreen(screen)}
+              onOpenTranscriber={handleOpenTranscriber}
+            />
+          )}
+          {currentScreen === 'cycle-tracker' && (
+            <CycleTrackerScreen onOpenTranscriber={handleOpenTranscriber} />
+          )}
           {currentScreen === 'doctors' && (
             <DoctorsScreen onOpenTranscriber={handleOpenTranscriber} />
           )}
@@ -121,11 +135,10 @@ export default function App() {
           {currentScreen === 'community' && (
             <CommunityScreen onOpenTranscriber={handleOpenTranscriber} />
           )}
-          {currentScreen === 'cycle-tracker' && (
-            <CycleTrackerScreen onOpenTranscriber={handleOpenTranscriber} />
-          )}
           {currentScreen === 'lifestyle-nutrition' && <NutritionScreen />}
-          {currentScreen === 'ai-companion' && <AiCompanionScreen />}
+          {currentScreen === 'ai-companion' && (
+            <AiCompanionScreen onOpenTranscriber={handleOpenTranscriber} />
+          )}
           {currentScreen === 'settings' && <SettingsScreen />}
         </main>
 
